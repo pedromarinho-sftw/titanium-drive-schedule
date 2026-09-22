@@ -222,7 +222,15 @@ Estou enviando esta mensagem para confirmar o serviço e o horário.`
       );
       window.open(`https://wa.me/${WHATSAPP}?text=${message}`, "_blank", "noopener,noreferrer");
     } catch (error) {
-      setBookingError(error instanceof Error ? error.message : "Não foi possível solicitar o agendamento.");
+      const message = error instanceof Error ? error.message : "Não foi possível registrar o agendamento.";
+      setBookingError(
+        /indispon|unique|duplicad/i.test(message)
+          ? "Este horário acabou de ficar indisponível. Escolha outro horário disponível."
+          : message,
+      );
+      await refreshSlots(selectedDate);
+    } finally {
+      setSubmitting(false);
     }
   }
 
