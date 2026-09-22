@@ -133,13 +133,99 @@ function TitaniumPage() {
   const [selectedTime, setSelectedTime] = useState("");
   const [selectedService, setSelectedService] = useState(services[0]?.name ?? "");
   const [testimonial, setTestimonial] = useState(0);
-  const [success, setSuccess] = useState<{ name: string; car: string; phone: string; notes: string; bookingId: string; cancellationToken: string } | null>(null);\n  const [unavailable, setUnavailable] = useState<string[]>([]);\n  const [loadingSlots, setLoadingSlots] = useState(false);\n  const [bookingError, setBookingError] = useState("");\n  const [cancelling, setCancelling] = useState(false);
+  const [success, setSuccess] = useState<{ name: string; car: string; phone: string; notes: string; bookingId: string; cancellationToken: string } | null>(null);
+  const [unavailable, setUnavailable] = useState<string[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [bookingError, setBookingError] = useState("");
+  const [cancelling, setCancelling] = useState(false);
 
-  const unavailable = useMemo(() => {
-    if (!selectedDate) return [];
-    const day = selectedDate.getDate();
-    return day % 2 === 0 ? ["09:00", "12:00", "16:00"] : ["08:00", "11:00", "15:00", "17:00"];
+  useEffect(() => {
+    let active = true;
+    async function loadAvailability() {
+      if (!selectedDate) return;
+      setLoadingSlots(true);
+      setBookingError("");
+      try {
+        const booked = await getBookedSlots(dateKey(selectedDate));
+        if (active) {
+          setUnavailable(booked);
+          setSelectedTime((current) => booked.includes(current) ? "" : current);
+        }
+      } catch (error) {
+        if (active) setBookingError(error instanceof Error ? error.message : "Não foi possível carregar os horários.");
+      } finally {
+        if (active) setLoadingSlots(false);
+      }
+    }
+    void loadAvailability();
+    return () => { active = false; };
   }, [selectedDate]);
+
+  function selectDate(date: Date) {
+    setSelectedDate(date);
+    setSelectedTime("");
+    setBookingError("");
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!selectedDate || !selectedTime) return;
+    setBookingError("");
+    const data = new FormData(event.currentTarget);
+    const bookingData = {
+      name: String(data.get("name") ?? ""),
+      phone: String(data.get("phone") ?? ""),
+      car: String(data.get("car") ?? ""),
+      notes: String(data.get("notes") ?? ""),
+      service: selectedService,
+      bookingDate: dateKey(selectedDate),
+      bookingTime: selectedTime,
+    };
+
+    try {
+      const booking = await createBooking(bookingData);
+      setUnavailable((current) => [...current, selectedTime]);
+      setSuccess({ ...bookingData, bookingId: booking.id, cancellationToken: booking.cancellationToken });
+
+      const dateLabel = selectedDate.toLocaleDateString("pt-BR", {
+        weekday: "long",
+        day: "2-digit",
+        month: "long",
+      });
+      const message = encodeURIComponent(
+        `Olá, Titanium! Gostaria de confirmar meu agendamento.
+
+🚗 Serviço: ${selectedService}
+📅 Data: ${dateLabel}
+🕐 Horário: ${selectedTime}
+👤 Nome: ${bookingData.name}
+🚘 Veículo: ${bookingData.car}
+📱 WhatsApp: ${bookingData.phone}
+${bookingData.notes ? `📝 Observações: ${bookingData.notes}` : ""}
+
+Estou enviando esta mensagem para confirmar o serviço e o horário.`
+      );
+      window.open(`https://wa.me/${WHATSAPP}?text=${message}`, "_blank", "noopener,noreferrer");
+    } catch (error) {
+      setBookingError(error instanceof Error ? error.message : "Não foi possível solicitar o agendamento.");
+    }
+  }
+
+  async function handleCancel() {
+    if (!success) return;
+    setCancelling(true);
+    try {
+      await cancelBooking(success.cancellationToken);
+      setUnavailable((current) => current.filter((slot) => slot !== selectedTime));
+      setSuccess(null);
+      setSelectedTime("");
+    } catch (error) {
+      setBookingError(error instanceof Error ? error.message : "Não foi possível cancelar o agendamento.");
+    } finally {
+      setCancelling(false);
+    }
+  }
+
 
   function selectDate(date: Date) {
     setSelectedDate(date);
@@ -163,11 +249,7 @@ function TitaniumPage() {
     day: "2-digit",
     month: "long",
   });
-  const whatsappMessage = encodeURIComponent(
-    success
-      ? `Olá, Titanium! Meu agendamento foi confirmado. Serviço: ${selectedService}. Data: ${formattedDate}. Horário: ${selectedTime}. Veículo: ${success.car}.`
-      : "Olá, Titanium! Gostaria de agendar um horário para cuidar do meu carro."
-  );
+  const whatsappMessage = encodeURIComponent("Olá, Titanium! Gostaria de falar sobre um agendamento.");
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground">
@@ -262,7 +344,7 @@ function TitaniumPage() {
             <h2>Escolha seu<br /><em>melhor horário.</em></h2>
             <p>Reserve seu atendimento em poucos passos. O horário fica separado para cuidarmos do seu carro sem pressa.</p>
             <div className="booking-perks">
-              <span><Check size={16} /> Confirmação imediata</span>
+              <span><Check size={16} /> Confirmação pelo WhatsApp</span>
               <span><Check size={16} /> Atendimento exclusivo</span>
               <span><Check size={16} /> Sem pagamento antecipado</span>
             </div>
@@ -272,9 +354,9 @@ function TitaniumPage() {
             {success ? (
               <div className="success-state" role="status">
                 <div className="success-icon"><Check size={32} /></div>
-                <span className="kicker">Agendamento confirmado</span>
-                <h3>Horário reservado, {success.name.split(" ")[0]}.</h3>
-                <p>Seu horário foi registrado. Envie a mensagem pronta pelo WhatsApp ou cancele com até 1 hora de antecedência.</p>
+                <span className="kicker">Confirmação pelo WhatsApp</span>
+                <h3>Solicitação enviada, {success.name.split(" ")[0]}.</h3>
+                <p>Seu pedido foi registrado e a mensagem pronta foi aberta no WhatsApp. A confirmação final do serviço e do horário será feita pela Titanium por lá.</p>
                 <div className="booking-summary">
                   <div><CalendarDays size={18} /><span><small>Data</small>{formattedDate}</span></div>
                   <div><Clock3 size={18} /><span><small>Horário</small>{selectedTime}</span></div>
@@ -283,7 +365,7 @@ function TitaniumPage() {
                 </div>
                 <div className="success-actions">
                   <a className="btn btn-primary" href={`https://wa.me/${WHATSAPP}?text=${whatsappMessage}`} target="_blank" rel="noreferrer">
-                    <MessageCircle size={18} /> Enviar confirmação no WhatsApp
+                    <MessageCircle size={18} /> Confirmar pelo WhatsApp
                   </a>
                   <button className="btn btn-secondary" onClick={() => void handleCancel()} disabled={cancelling}>
                     {cancelling ? "Cancelando..." : "Cancelar agendamento"}
