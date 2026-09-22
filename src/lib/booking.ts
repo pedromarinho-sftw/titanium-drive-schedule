@@ -35,7 +35,14 @@ async function rpc<T>(fn: string, body: Record<string, unknown>): Promise<T> {
   });
 
   if (!response.ok) {
-    const message = await response.text();
+    const raw = await response.text();
+    let message = raw;
+    try {
+      const parsed = JSON.parse(raw) as { message?: string; hint?: string; details?: string };
+      message = parsed.message || parsed.details || parsed.hint || raw;
+    } catch {
+      /* resposta não-JSON */
+    }
     throw new Error(message || "Não foi possível concluir a operação.");
   }
 

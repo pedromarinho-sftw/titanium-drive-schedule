@@ -412,7 +412,8 @@ Estou enviando esta mensagem para confirmar o serviço e o horário.`
                 </div>
                 {!selectedTime && <p className="time-warning">Selecione um horário disponível para continuar.</p>}
                 {bookingError && <p className="booking-error" role="alert">{bookingError}</p>}
-                <button className="btn btn-primary submit-button" type="submit" disabled={!selectedTime || loadingSlots}>Confirmar agendamento <ArrowRight size={18} /></button>
+                <p className="time-warning">Seu horário será reservado no sistema e a confirmação final do pedido será realizada pelo WhatsApp.</p>
+                <button className="btn btn-primary submit-button" type="submit" disabled={!selectedTime || loadingSlots || submitting}>{submitting ? "Reservando horário..." : "Reservar horário"} <ArrowRight size={18} /></button>
                 <div className="or-line"><span>ou</span></div>
                 <a className="whatsapp-alternative" href={`https://wa.me/${WHATSAPP}?text=${whatsappMessage}`} target="_blank" rel="noreferrer"><MessageCircle size={19} /> Prefiro agendar pelo WhatsApp</a>
               </form>
