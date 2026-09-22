@@ -229,3 +229,9 @@ a { color: inherit; text-decoration: none; }
 
 @keyframes float { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, 7px); } }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+
+.success-actions { display: grid; gap: 10px; margin-top: 30px; }
+.success-actions .btn { width: 100%; }
+.text-action { border: 0; background: transparent; color: var(--muted-foreground); cursor: pointer; font-size: 10px; text-transform: uppercase; padding: 8px; }
+.text-action:hover { color: var(--primary); }
+.booking-error { margin: 14px 0 0; padding: 12px 14px; border: 1px solid color-mix(in oklab, var(--primary) 55%, var(--border)); background: color-mix(in oklab, var(--primary) 8%, var(--card)); color: var(--secondary-foreground); font-size: 10px; line-height: 1.5; text-align: center; }
