@@ -18,7 +18,8 @@ import {
   Star,
   X,
 } from "lucide-react";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
+import { cancelBooking, createBooking, getBookedSlots } from "@/lib/booking";
 import heroImage from "@/assets/titanium-hero.jpg";
 import paintImage from "@/assets/paint-before-after.jpg";
 import interiorImage from "@/assets/interior-detail.jpg";
@@ -132,7 +133,7 @@ function TitaniumPage() {
   const [selectedTime, setSelectedTime] = useState("");
   const [selectedService, setSelectedService] = useState(services[0]?.name ?? "");
   const [testimonial, setTestimonial] = useState(0);
-  const [success, setSuccess] = useState<{ name: string; car: string; phone: string; notes: string } | null>(null);
+  const [success, setSuccess] = useState<{ name: string; car: string; phone: string; notes: string; bookingId: string; cancellationToken: string } | null>(null);\n  const [unavailable, setUnavailable] = useState<string[]>([]);\n  const [loadingSlots, setLoadingSlots] = useState(false);\n  const [bookingError, setBookingError] = useState("");\n  const [cancelling, setCancelling] = useState(false);
 
   const unavailable = useMemo(() => {
     if (!selectedDate) return [];
@@ -162,7 +163,11 @@ function TitaniumPage() {
     day: "2-digit",
     month: "long",
   });
-  const whatsappMessage = encodeURIComponent("Olá, Titanium! Gostaria de agendar um horário para cuidar do meu carro.");
+  const whatsappMessage = encodeURIComponent(
+    success
+      ? `Olá, Titanium! Meu agendamento foi confirmado. Serviço: ${selectedService}. Data: ${formattedDate}. Horário: ${selectedTime}. Veículo: ${success.car}.`
+      : "Olá, Titanium! Gostaria de agendar um horário para cuidar do meu carro."
+  );
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground">
@@ -267,16 +272,24 @@ function TitaniumPage() {
             {success ? (
               <div className="success-state" role="status">
                 <div className="success-icon"><Check size={32} /></div>
-                <span className="kicker">Solicitação recebida</span>
+                <span className="kicker">Agendamento confirmado</span>
                 <h3>Horário reservado, {success.name.split(" ")[0]}.</h3>
-                <p>Entraremos em contato pelo WhatsApp para confirmar os detalhes.</p>
+                <p>Seu horário foi registrado. Envie a mensagem pronta pelo WhatsApp ou cancele com até 1 hora de antecedência.</p>
                 <div className="booking-summary">
                   <div><CalendarDays size={18} /><span><small>Data</small>{formattedDate}</span></div>
                   <div><Clock3 size={18} /><span><small>Horário</small>{selectedTime}</span></div>
                   <div><CarFront size={18} /><span><small>Veículo</small>{success.car}</span></div>
                   <div><Sparkles size={18} /><span><small>Serviço</small>{selectedService}</span></div>
                 </div>
-                <button className="btn btn-secondary" onClick={() => { setSuccess(null); setSelectedTime(""); }}>Fazer outro agendamento</button>
+                <div className="success-actions">
+                  <a className="btn btn-primary" href={`https://wa.me/${WHATSAPP}?text=${whatsappMessage}`} target="_blank" rel="noreferrer">
+                    <MessageCircle size={18} /> Enviar confirmação no WhatsApp
+                  </a>
+                  <button className="btn btn-secondary" onClick={() => void handleCancel()} disabled={cancelling}>
+                    {cancelling ? "Cancelando..." : "Cancelar agendamento"}
+                  </button>
+                  <button className="text-action" onClick={() => { setSuccess(null); setSelectedTime(""); }}>Fazer outro agendamento</button>
+                </div>
               </div>
             ) : (
               <form onSubmit={handleSubmit}>
@@ -294,8 +307,8 @@ function TitaniumPage() {
                   })}
                 </div>
 
-                <div className="form-step"><span>02</span><div><strong>Escolha o horário</strong><small>Horários em cinza já estão ocupados</small></div></div>
-                <div className="time-grid">
+                <div className="form-step"><span>02</span><div><strong>Escolha o horário</strong><small>{loadingSlots ? "Atualizando disponibilidade..." : "Horários ocupados ficam indisponíveis para todos"}</small></div></div>
+                <div className="time-grid" aria-busy={loadingSlots}>
                   {slots.map((slot) => {
                     const disabled = unavailable.includes(slot);
                     return <button type="button" key={slot} disabled={disabled} className={selectedTime === slot ? "active" : ""} onClick={() => setSelectedTime(slot)}>{slot}</button>;
@@ -311,7 +324,8 @@ function TitaniumPage() {
                   <label className="full">Observações <span>(opcional)</span><textarea name="notes" rows={3} placeholder="Algo que devemos saber sobre o veículo?" /></label>
                 </div>
                 {!selectedTime && <p className="time-warning">Selecione um horário disponível para continuar.</p>}
-                <button className="btn btn-primary submit-button" type="submit" disabled={!selectedTime}>Confirmar agendamento <ArrowRight size={18} /></button>
+                {bookingError && <p className="booking-error" role="alert">{bookingError}</p>}
+                <button className="btn btn-primary submit-button" type="submit" disabled={!selectedTime || loadingSlots}>Confirmar agendamento <ArrowRight size={18} /></button>
                 <div className="or-line"><span>ou</span></div>
                 <a className="whatsapp-alternative" href={`https://wa.me/${WHATSAPP}?text=${whatsappMessage}`} target="_blank" rel="noreferrer"><MessageCircle size={19} /> Prefiro agendar pelo WhatsApp</a>
               </form>
