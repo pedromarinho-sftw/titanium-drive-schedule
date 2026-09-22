@@ -138,6 +138,7 @@ function TitaniumPage() {
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [bookingError, setBookingError] = useState("");
   const [cancelling, setCancelling] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -167,10 +168,24 @@ function TitaniumPage() {
     setBookingError("");
   }
 
+  async function refreshSlots(date: Date) {
+    setLoadingSlots(true);
+    try {
+      const booked = await getBookedSlots(dateKey(date));
+      setUnavailable(booked);
+      setSelectedTime((current) => (booked.includes(current) ? "" : current));
+    } catch {
+      /* mantém a lista atual */
+    } finally {
+      setLoadingSlots(false);
+    }
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!selectedDate || !selectedTime) return;
+    if (!selectedDate || !selectedTime || submitting) return;
     setBookingError("");
+    setSubmitting(true);
     const data = new FormData(event.currentTarget);
     const bookingData = {
       name: String(data.get("name") ?? ""),
