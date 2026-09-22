@@ -226,24 +226,6 @@ Estou enviando esta mensagem para confirmar o serviço e o horário.`
     }
   }
 
-
-  function selectDate(date: Date) {
-    setSelectedDate(date);
-    setSelectedTime("");
-  }
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!selectedDate || !selectedTime) return;
-    const data = new FormData(event.currentTarget);
-    setSuccess({
-      name: String(data.get("name") ?? ""),
-      phone: String(data.get("phone") ?? ""),
-      car: String(data.get("car") ?? ""),
-      notes: String(data.get("notes") ?? ""),
-    });
-  }
-
   const formattedDate = selectedDate?.toLocaleDateString("pt-BR", {
     weekday: "long",
     day: "2-digit",
