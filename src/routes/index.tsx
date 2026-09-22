@@ -138,6 +138,7 @@ function TitaniumPage() {
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [bookingError, setBookingError] = useState("");
   const [cancelling, setCancelling] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -167,10 +168,24 @@ function TitaniumPage() {
     setBookingError("");
   }
 
+  async function refreshSlots(date: Date) {
+    setLoadingSlots(true);
+    try {
+      const booked = await getBookedSlots(dateKey(date));
+      setUnavailable(booked);
+      setSelectedTime((current) => (booked.includes(current) ? "" : current));
+    } catch {
+      /* mantém a lista atual */
+    } finally {
+      setLoadingSlots(false);
+    }
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!selectedDate || !selectedTime) return;
+    if (!selectedDate || !selectedTime || submitting) return;
     setBookingError("");
+    setSubmitting(true);
     const data = new FormData(event.currentTarget);
     const bookingData = {
       name: String(data.get("name") ?? ""),
@@ -207,7 +222,15 @@ Estou enviando esta mensagem para confirmar o serviço e o horário.`
       );
       window.open(`https://wa.me/${WHATSAPP}?text=${message}`, "_blank", "noopener,noreferrer");
     } catch (error) {
-      setBookingError(error instanceof Error ? error.message : "Não foi possível solicitar o agendamento.");
+      const message = error instanceof Error ? error.message : "Não foi possível registrar o agendamento.";
+      setBookingError(
+        /indispon|unique|duplicad/i.test(message)
+          ? "Este horário acabou de ficar indisponível. Escolha outro horário disponível."
+          : message,
+      );
+      await refreshSlots(selectedDate);
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -389,7 +412,8 @@ Estou enviando esta mensagem para confirmar o serviço e o horário.`
                 </div>
                 {!selectedTime && <p className="time-warning">Selecione um horário disponível para continuar.</p>}
                 {bookingError && <p className="booking-error" role="alert">{bookingError}</p>}
-                <button className="btn btn-primary submit-button" type="submit" disabled={!selectedTime || loadingSlots}>Confirmar agendamento <ArrowRight size={18} /></button>
+                <p className="time-warning">Seu horário será reservado no sistema e a confirmação final do pedido será realizada pelo WhatsApp.</p>
+                <button className="btn btn-primary submit-button" type="submit" disabled={!selectedTime || loadingSlots || submitting}>{submitting ? "Reservando horário..." : "Reservar horário"} <ArrowRight size={18} /></button>
                 <div className="or-line"><span>ou</span></div>
                 <a className="whatsapp-alternative" href={`https://wa.me/${WHATSAPP}?text=${whatsappMessage}`} target="_blank" rel="noreferrer"><MessageCircle size={19} /> Prefiro agendar pelo WhatsApp</a>
               </form>
