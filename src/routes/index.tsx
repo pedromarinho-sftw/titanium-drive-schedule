@@ -136,6 +136,7 @@ function TitaniumPage() {
   const [success, setSuccess] = useState<{ name: string; car: string; phone: string; notes: string; bookingId: string; cancellationToken: string } | null>(null);
   const [unavailable, setUnavailable] = useState<string[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
+  const [availabilityLoaded, setAvailabilityLoaded] = useState(false);
   const [bookingError, setBookingError] = useState("");
   const [cancelling, setCancelling] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -145,15 +146,20 @@ function TitaniumPage() {
     async function loadAvailability() {
       if (!selectedDate) return;
       setLoadingSlots(true);
+      setAvailabilityLoaded(false);
       setBookingError("");
       try {
         const booked = await getBookedSlots(dateKey(selectedDate));
         if (active) {
           setUnavailable(booked);
+          setAvailabilityLoaded(true);
           setSelectedTime((current) => booked.includes(current) ? "" : current);
         }
       } catch (error) {
-        if (active) setBookingError(error instanceof Error ? error.message : "Não foi possível carregar os horários.");
+        if (active) {
+          setAvailabilityLoaded(false);
+          setBookingError(error instanceof Error ? error.message : "Não foi possível carregar os horários.");
+        }
       } finally {
         if (active) setLoadingSlots(false);
       }
@@ -165,17 +171,20 @@ function TitaniumPage() {
   function selectDate(date: Date) {
     setSelectedDate(date);
     setSelectedTime("");
+    setAvailabilityLoaded(false);
     setBookingError("");
   }
 
   async function refreshSlots(date: Date) {
     setLoadingSlots(true);
+    setAvailabilityLoaded(false);
     try {
       const booked = await getBookedSlots(dateKey(date));
       setUnavailable(booked);
+      setAvailabilityLoaded(true);
       setSelectedTime((current) => (booked.includes(current) ? "" : current));
-    } catch {
-      /* mantém a lista atual */
+    } catch (error) {
+      setBookingError(error instanceof Error ? error.message : "Não foi possível atualizar os horários.");
     } finally {
       setLoadingSlots(false);
     }
@@ -183,7 +192,7 @@ function TitaniumPage() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!selectedDate || !selectedTime || submitting) return;
+    if (!selectedDate || !selectedTime || !availabilityLoaded || submitting) return;
     setBookingError("");
     setSubmitting(true);
     const data = new FormData(event.currentTarget);
@@ -220,7 +229,7 @@ ${bookingData.notes ? `📝 Observações: ${bookingData.notes}` : ""}
 
 Estou enviando esta mensagem para confirmar o serviço e o horário.`
       );
-      window.open(`https://wa.me/${WHATSAPP}?text=${message}`, "_blank", "noopener,noreferrer");
+      window.location.assign(`https://wa.me/${WHATSAPP}?text=${message}`);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Não foi possível registrar o agendamento.";
       setBookingError(
@@ -254,7 +263,11 @@ Estou enviando esta mensagem para confirmar o serviço e o horário.`
     day: "2-digit",
     month: "long",
   });
-  const whatsappMessage = encodeURIComponent("Olá, Titanium! Gostaria de falar sobre um agendamento.");
+  const whatsappMessage = success
+    ? encodeURIComponent(
+        `Olá, Titanium! Gostaria de confirmar meu agendamento.\\n\\n🚗 Serviço: ${success.service}\\n📅 Data: ${selectedDate?.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })}\\n🕐 Horário: ${success.bookingTime}\\n👤 Nome: ${success.name}\\n🚘 Veículo: ${success.car}\\n📱 WhatsApp: ${success.phone}${success.notes ? `\\n📝 Observações: ${success.notes}` : ""}\\n\\nEstou enviando esta mensagem para confirmar o serviço e o horário.`
+      )
+    : encodeURIComponent("Olá, Titanium! Gostaria de falar sobre um agendamento.");
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground">
@@ -397,7 +410,7 @@ Estou enviando esta mensagem para confirmar o serviço e o horário.`
                 <div className="form-step"><span>02</span><div><strong>Escolha o horário</strong><small>{loadingSlots ? "Atualizando disponibilidade..." : "Horários ocupados ficam indisponíveis para todos"}</small></div></div>
                 <div className="time-grid" aria-busy={loadingSlots}>
                   {slots.map((slot) => {
-                    const disabled = unavailable.includes(slot);
+                    const disabled = loadingSlots || !availabilityLoaded || unavailable.includes(slot);
                     return <button type="button" key={slot} disabled={disabled} className={selectedTime === slot ? "active" : ""} onClick={() => setSelectedTime(slot)}>{slot}</button>;
                   })}
                 </div>
@@ -413,7 +426,7 @@ Estou enviando esta mensagem para confirmar o serviço e o horário.`
                 {!selectedTime && <p className="time-warning">Selecione um horário disponível para continuar.</p>}
                 {bookingError && <p className="booking-error" role="alert">{bookingError}</p>}
                 <p className="time-warning">Seu horário será reservado no sistema e a confirmação final do pedido será realizada pelo WhatsApp.</p>
-                <button className="btn btn-primary submit-button" type="submit" disabled={!selectedTime || loadingSlots || submitting}>{submitting ? "Reservando horário..." : "Reservar horário"} <ArrowRight size={18} /></button>
+                <button className="btn btn-primary submit-button" type="submit" disabled={!selectedTime || !availabilityLoaded || loadingSlots || submitting}>{submitting ? "Reservando horário..." : "Reservar horário"} <ArrowRight size={18} /></button>
                 <div className="or-line"><span>ou</span></div>
                 <a className="whatsapp-alternative" href={`https://wa.me/${WHATSAPP}?text=${whatsappMessage}`} target="_blank" rel="noreferrer"><MessageCircle size={19} /> Prefiro agendar pelo WhatsApp</a>
               </form>
