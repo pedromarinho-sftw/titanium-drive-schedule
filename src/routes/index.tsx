@@ -277,13 +277,13 @@ Estou enviando esta mensagem para confirmar o serviço e o horário.`
           <img src={titaniumLogo} alt="Titanium" className="brand-logo" width={86} height={86} />
         </a>
         <nav className="desktop-nav" aria-label="Navegação principal">
+          <a href="#inicio">Início</a>
           <a href="#servicos">Serviços</a>
-          <a href="#sobre">Sobre</a>
           <a href="#galeria">Galeria</a>
-          <a href="#agendamento">Agendamento</a>
+          <a href="#sobre">Sobre</a>
           <a href="#contato">Contato</a>
         </nav>
-        <a href="#agendamento" className="header-cta">Agendar horário</a>
+        <a href="#agendamento" className="header-cta"><MessageCircle size={15} /> Agendar pelo WhatsApp</a>
         <button className="menu-button" onClick={() => setMenuOpen((open) => !open)} aria-label="Abrir menu" aria-expanded={menuOpen}>
           {menuOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
