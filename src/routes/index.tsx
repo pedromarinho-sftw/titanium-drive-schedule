@@ -21,6 +21,7 @@ import {
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { cancelBooking, createBooking, getBookedSlots } from "@/lib/booking";
 import heroImage from "@/assets/titanium-hero.jpg";
+import titaniumLogo from "@/assets/titanium-logo.jpg";
 import paintImage from "@/assets/paint-before-after.jpg";
 import interiorImage from "@/assets/interior-detail.jpg";
 
@@ -273,8 +274,7 @@ Estou enviando esta mensagem para confirmar o serviço e o horário.`
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground">
       <header className="site-header">
         <a href="#inicio" className="brand" aria-label="Titanium — início">
-          <span className="brand-mark">T</span>
-          <span>Titanium</span>
+          <img src={titaniumLogo} alt="Titanium" className="brand-logo" width={86} height={86} />
         </a>
         <nav className="desktop-nav" aria-label="Navegação principal">
           <a href="#servicos">Serviços</a>
@@ -468,7 +468,7 @@ Estou enviando esta mensagem para confirmar o serviço e o horário.`
 
       <footer id="contato" className="site-footer">
         <div className="footer-top">
-          <div className="footer-brand"><a href="#inicio" className="brand"><span className="brand-mark">T</span><span>Titanium</span></a><p>Estética automotiva premium.<br />Precisão que você vê. Proteção que dura.</p></div>
+          <div className="footer-brand"><a href="#inicio" className="brand"><img src={titaniumLogo} alt="Titanium" className="brand-logo footer-logo" width={100} height={100} /></a><p>Estética automotiva premium.<br />Precisão que você vê. Proteção que dura.</p></div>
           <div><span className="footer-label">Contato</span><a href={`https://wa.me/${WHATSAPP}`} target="_blank" rel="noreferrer">(32) 99131-8611</a><a href="https://instagram.com/titanium_jf" target="_blank" rel="noreferrer"><Instagram size={16} /> @titanium_jf</a></div>
           <div><span className="footer-label">Localização</span><p><MapPin size={16} /> Juiz de Fora — MG</p><small>Endereço a confirmar</small></div>
           <div><span className="footer-label">Funcionamento</span><p>Horários sob consulta</p><small>Agende seu atendimento online</small></div>
