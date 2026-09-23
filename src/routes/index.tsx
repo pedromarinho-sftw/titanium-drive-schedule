@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
   ArrowDown,
-  ArrowLeft,
   ArrowRight,
   CalendarDays,
   CarFront,
@@ -15,7 +14,6 @@ import {
   MessageCircle,
   ShieldCheck,
   Sparkles,
-  Star,
   X,
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
@@ -83,23 +81,6 @@ const services = [
   },
 ];
 
-const testimonials = [
-  {
-    quote: "O carro voltou melhor do que quando saiu da concessionária. O cuidado nos mínimos detalhes impressiona.",
-    name: "Rafael M.",
-    car: "BMW 320i",
-  },
-  {
-    quote: "Atendimento impecável e resultado surpreendente. A pintura ganhou outra profundidade depois da vitrificação.",
-    name: "Mariana A.",
-    car: "Jeep Compass",
-  },
-  {
-    quote: "Equipe extremamente cuidadosa. Cumpriram o prazo e me explicaram todo o processo com muita transparência.",
-    name: "Lucas R.",
-    car: "Audi A3",
-  },
-];
 
 const slots = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"];
 
@@ -133,7 +114,6 @@ function TitaniumPage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(dates[0] ?? null);
   const [selectedTime, setSelectedTime] = useState("");
   const [selectedService, setSelectedService] = useState(services[0]?.name ?? "");
-  const [testimonial, setTestimonial] = useState(0);
   const [success, setSuccess] = useState<{ name: string; car: string; phone: string; notes: string; service: string; bookingDate: string; bookingTime: string; bookingId: string; cancellationToken: string } | null>(null);
   const [unavailable, setUnavailable] = useState<string[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
