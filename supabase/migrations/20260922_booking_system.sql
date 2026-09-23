@@ -56,7 +56,14 @@ as $$
 declare
   new_booking public.bookings;
 begin
-  if p_date < current_date then
+  if length(trim(coalesce(p_name, ''))) < 2
+     or length(trim(coalesce(p_phone, ''))) < 8
+     or length(trim(coalesce(p_car, ''))) < 1
+     or length(trim(coalesce(p_service, ''))) < 1 then
+    raise exception 'Dados do agendamento incompletos.';
+  end if;
+
+  if p_date < (now() at time zone 'America/Sao_Paulo')::date then
     raise exception 'Não é possível agendar para uma data passada.';
   end if;
 
@@ -122,6 +129,12 @@ begin
   return json_build_object('success', true);
 end;
 $$;
+
+revoke all on public.bookings from public, anon, authenticated;
+
+revoke all on function public.get_booked_slots(date) from public;
+revoke all on function public.create_booking(text,text,text,text,text,date,time) from public;
+revoke all on function public.cancel_booking(uuid) from public;
 
 grant execute on function public.get_booked_slots(date) to anon, authenticated;
 grant execute on function public.create_booking(text,text,text,text,text,date,time) to anon, authenticated;
