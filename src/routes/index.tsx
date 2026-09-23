@@ -134,7 +134,7 @@ function TitaniumPage() {
   const [selectedTime, setSelectedTime] = useState("");
   const [selectedService, setSelectedService] = useState(services[0]?.name ?? "");
   const [testimonial, setTestimonial] = useState(0);
-  const [success, setSuccess] = useState<{ name: string; car: string; phone: string; notes: string; bookingId: string; cancellationToken: string } | null>(null);
+  const [success, setSuccess] = useState<{ name: string; car: string; phone: string; notes: string; service: string; bookingDate: string; bookingTime: string; bookingId: string; cancellationToken: string } | null>(null);
   const [unavailable, setUnavailable] = useState<string[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [availabilityLoaded, setAvailabilityLoaded] = useState(false);
@@ -310,7 +310,7 @@ Estou enviando esta mensagem para confirmar o serviço e o horário.`
             </div>
           </div>
           <a href="#servicos" className="scroll-cue" aria-label="Ver serviços"><ArrowDown size={20} /></a>
-          <div className="hero-stat"><strong>+500</strong><span>carros transformados</span></div>
+          
         </section>
 
         <section id="servicos" className="section services-section">
@@ -449,19 +449,14 @@ Estou enviando esta mensagem para confirmar o serviço e o horário.`
         </section>
 
         <section className="section testimonials-section">
-          <span className="kicker">Quem confia, recomenda</span>
+          <span className="kicker">Nosso compromisso</span>
           <div className="testimonial-layout">
-            <div className="quote-mark">“</div>
+            <div className="quote-mark">+</div>
             <article>
               <div className="stars">{[1, 2, 3, 4, 5].map((star) => <Star key={star} size={17} fill="currentColor" />)}</div>
-              <blockquote>{testimonials[testimonial]?.quote}</blockquote>
-              <div className="testimonial-author"><strong>{testimonials[testimonial]?.name}</strong><span>{testimonials[testimonial]?.car}</span></div>
+              <blockquote>Seu veículo recebe atenção técnica em cada etapa, do primeiro contato ao acabamento final.</blockquote>
+              <div className="testimonial-author"><strong>Atendimento Titanium</strong><span>Qualidade e cuidado em cada detalhe</span></div>
             </article>
-            <div className="carousel-controls">
-              <button onClick={() => setTestimonial((testimonial - 1 + testimonials.length) % testimonials.length)} aria-label="Depoimento anterior"><ArrowLeft size={19} /></button>
-              <span>{String(testimonial + 1).padStart(2, "0")} / {String(testimonials.length).padStart(2, "0")}</span>
-              <button onClick={() => setTestimonial((testimonial + 1) % testimonials.length)} aria-label="Próximo depoimento"><ArrowRight size={19} /></button>
-            </div>
           </div>
         </section>
       </main>
@@ -470,10 +465,10 @@ Estou enviando esta mensagem para confirmar o serviço e o horário.`
         <div className="footer-top">
           <div className="footer-brand"><a href="#inicio" className="brand"><img src={titaniumLogo} alt="Titanium" className="brand-logo footer-logo" width={100} height={100} /></a><p>Estética automotiva premium.<br />Precisão que você vê. Proteção que dura.</p></div>
           <div><span className="footer-label">Contato</span><a href={`https://wa.me/${WHATSAPP}`} target="_blank" rel="noreferrer">(32) 99131-8611</a><a href="https://instagram.com/titanium_jf" target="_blank" rel="noreferrer"><Instagram size={16} /> @titanium_jf</a></div>
-          <div><span className="footer-label">Localização</span><p><MapPin size={16} /> Juiz de Fora — MG</p><small>Endereço a confirmar</small></div>
+          <div><span className="footer-label">Localização</span><p><MapPin size={16} /> Juiz de Fora — MG</p><small>Endereço será informado nesta etapa final.</small></div>
           <div><span className="footer-label">Funcionamento</span><p>Horários sob consulta</p><small>Agende seu atendimento online</small></div>
         </div>
-        <div className="map-placeholder"><MapPin size={24} /><span>Mapa e endereço em breve</span></div>
+        <div className="map-placeholder" aria-label="Localização da Titanium"><MapPin size={24} /><span>Localização detalhada será adicionada após confirmação do endereço.</span></div>
         <div className="footer-bottom"><span>© 2026 Titanium Estética Automotiva</span><span>Excelência em cada detalhe.</span></div>
       </footer>
 
