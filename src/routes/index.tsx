@@ -134,7 +134,7 @@ function TitaniumPage() {
   const [selectedTime, setSelectedTime] = useState("");
   const [selectedService, setSelectedService] = useState(services[0]?.name ?? "");
   const [testimonial, setTestimonial] = useState(0);
-  const [success, setSuccess] = useState<{ name: string; car: string; phone: string; notes: string; bookingId: string; cancellationToken: string } | null>(null);
+  const [success, setSuccess] = useState<{ name: string; car: string; phone: string; notes: string; service: string; bookingDate: string; bookingTime: string; bookingId: string; cancellationToken: string } | null>(null);
   const [unavailable, setUnavailable] = useState<string[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [availabilityLoaded, setAvailabilityLoaded] = useState(false);
@@ -266,7 +266,7 @@ Estou enviando esta mensagem para confirmar o serviço e o horário.`
   });
   const whatsappMessage = success
     ? encodeURIComponent(
-        `Olá, Titanium! Gostaria de confirmar meu agendamento.\\n\\n🚗 Serviço: ${success.service}\\n📅 Data: ${selectedDate?.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })}\\n🕐 Horário: ${success.bookingTime}\\n👤 Nome: ${success.name}\\n🚘 Veículo: ${success.car}\\n📱 WhatsApp: ${success.phone}${success.notes ? `\\n📝 Observações: ${success.notes}` : ""}\\n\\nEstou enviando esta mensagem para confirmar o serviço e o horário.`
+        `Olá, Titanium! Gostaria de confirmar meu agendamento.\n\n🚗 Serviço: ${success.service}\n📅 Data: ${selectedDate?.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })}\n🕐 Horário: ${success.bookingTime}\n👤 Nome: ${success.name}\n🚘 Veículo: ${success.car}\n📱 WhatsApp: ${success.phone}${success.notes ? `\n📝 Observações: ${success.notes}` : ""}\n\nEstou enviando esta mensagem para confirmar o serviço e o horário.`
       )
     : encodeURIComponent("Olá, Titanium! Gostaria de falar sobre um agendamento.");
 
