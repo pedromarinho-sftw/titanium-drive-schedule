@@ -24,6 +24,7 @@ import heroImage from "@/assets/titanium-hero.jpg";
 import titaniumLogo from "@/assets/titanium-logo.jpg";
 import paintImage from "@/assets/paint-before-after.jpg";
 import interiorImage from "@/assets/interior-detail.jpg";
+import serviceDetailImage from "@/assets/titanium-service.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -324,6 +325,16 @@ Estou enviando esta mensagem para confirmar o serviço e o horário.`
               return (
                 <article className="service-card" key={service.name}>
                   <span className="service-number">{service.code}</span>
+                  {service.name === "Detalhamento Completo" && (
+                    <img
+                      src={serviceDetailImage}
+                      alt="Detalhamento automotivo profissional em veículo preto"
+                      className="service-card-image"
+                      loading="lazy"
+                      width={450}
+                      height={800}
+                    />
+                  )}
                   <Icon size={30} strokeWidth={1.5} />
                   <h3>{service.name}</h3>
                   <p>{service.description}</p>
