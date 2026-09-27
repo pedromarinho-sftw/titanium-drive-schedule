@@ -100,7 +100,9 @@ a { color: inherit; text-decoration: none; }
 .service-card::after { content: ""; position: absolute; inset: auto -40% 0; height: 2px; background: var(--primary); transition: inset .3s; }
 .service-card:hover { background: var(--secondary); transform: translateY(-3px); z-index: 1; }
 .service-card:hover::after { inset-inline: 0; }
-.service-card > svg { color: var(--primary); margin-top: 30px; }
+.service-card-image { width: 100%; height: 150px; margin: 10px 0 6px; object-fit: cover; object-position: center 58%; border: 1px solid var(--border); filter: saturate(.9); transition: transform .35s ease; }
+.service-card:hover .service-card-image { transform: scale(1.02); }
+.service-card > svg { color: var(--primary); margin-top: 18px; }
 .service-number { position: absolute; top: 22px; right: 24px; color: var(--muted-foreground); font: 400 12px var(--font-display); }
 .service-card h3 { margin: 28px 0 12px; max-width: 220px; font: 500 25px/1.15 var(--font-display); text-transform: uppercase; }
 .service-card p { margin: 0; color: var(--muted-foreground); font-size: 12px; line-height: 1.65; }
