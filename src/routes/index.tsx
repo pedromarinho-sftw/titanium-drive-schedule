@@ -23,8 +23,8 @@ import { cancelBooking, createBooking, getBookedSlots } from "@/lib/booking";
 import heroImage from "@/assets/titanium-hero.jpg";
 import titaniumLogo from "@/assets/titanium-logo.jpg";
 import paintImage from "@/assets/paint-before-after.jpg";
-import interiorImage from "@/assets/interior-detail.jpg";
-import serviceDetailImage from "@/assets/titanium-service.jpg";
+import servicePhotoImage from "@/assets/titanium-service.jpg";
+import servicePhotoImage2 from "@/assets/titanium-service-2.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -325,16 +325,6 @@ Estou enviando esta mensagem para confirmar o serviço e o horário.`
               return (
                 <article className="service-card" key={service.name}>
                   <span className="service-number">{service.code}</span>
-                  {service.name === "Detalhamento Completo" && (
-                    <img
-                      src={serviceDetailImage}
-                      alt="Detalhamento automotivo profissional em veículo preto"
-                      className="service-card-image"
-                      loading="lazy"
-                      width={450}
-                      height={800}
-                    />
-                  )}
                   <Icon size={30} strokeWidth={1.5} />
                   <h3>{service.name}</h3>
                   <p>{service.description}</p>
@@ -357,12 +347,12 @@ Estou enviando esta mensagem para confirmar o serviço e o horário.`
               <figcaption><span>Antes</span><span>Depois</span></figcaption>
             </figure>
             <figure className="gallery-side">
-              <img src={interiorImage} alt="Interior automotivo após higienização profissional" loading="lazy" width={1200} height={912} />
-              <figcaption>Higienização interna</figcaption>
+              <img src={servicePhotoImage} alt="Veículo preto com acabamento automotivo premium" loading="lazy" width={180} height={240} />
+              <figcaption>Acabamento premium</figcaption>
             </figure>
             <figure className="gallery-side detail-crop">
-              <img src={heroImage} alt="Reflexo da pintura após detalhamento" loading="lazy" width={1920} height={1088} />
-              <figcaption>Brilho e proteção</figcaption>
+              <img src={servicePhotoImage2} alt="Veículo preparado em ambiente profissional de estética automotiva" loading="lazy" width={100} height={133} />
+              <figcaption>Proteção e película</figcaption>
             </figure>
           </div>
         </section>
