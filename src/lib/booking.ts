@@ -1,7 +1,4 @@
-const SUPABASE_URL = import.meta.env['VITE_SUPABASE_URL'] as string | undefined;
-const SUPABASE_PUBLISHABLE_KEY =
-  (import.meta.env['VITE_SUPABASE_PUBLISHABLE_KEY'] as string | undefined) ??
-  (import.meta.env['VITE_SUPABASE_ANON_KEY'] as string | undefined);
+import { supabase } from "@/integrations/supabase/client";
 
 export type BookingInput = {
   name: string;
@@ -18,45 +15,48 @@ export type Booking = BookingInput & {
   cancellationToken: string;
 };
 
-function assertConfig() {
-  if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-    throw new Error("Sistema de agendamento ainda não configurado. Configure VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY.");
-  }
-}
-
-async function rpc<T>(fn: string, body: Record<string, unknown>): Promise<T> {
-  assertConfig();
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
-    method: "POST",
-    headers: {
-      apikey: SUPABASE_PUBLISHABLE_KEY!,
-      Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  });
-
-  if (!response.ok) {
-    const raw = await response.text();
-    let message = raw;
-    try {
-      const parsed = JSON.parse(raw) as { message?: string; hint?: string; details?: string };
-      message = parsed.message || parsed.details || parsed.hint || raw;
-    } catch {
-      /* resposta não-JSON */
-    }
-    throw new Error(message || "Não foi possível concluir a operação.");
+function parseBooking(value: unknown): Booking {
+  if (!value || typeof value !== "object") {
+    throw new Error("Resposta inválida do sistema de agendamento.");
   }
 
-  return response.json() as Promise<T>;
+  const data = value as Record<string, unknown>;
+  const id = typeof data.id === "string" ? data.id : "";
+  const cancellationToken =
+    typeof data.cancellationToken === "string"
+      ? data.cancellationToken
+      : typeof data.cancellation_token === "string"
+        ? data.cancellation_token
+        : "";
+
+  if (!id || !cancellationToken) {
+    throw new Error("O Supabase não retornou os dados completos do agendamento.");
+  }
+
+  return {
+    name: String(data.name ?? ""),
+    phone: String(data.phone ?? ""),
+    car: String(data.car ?? ""),
+    notes: String(data.notes ?? ""),
+    service: String(data.service ?? ""),
+    bookingDate: String(data.bookingDate ?? data.booking_date ?? ""),
+    bookingTime: String(data.bookingTime ?? data.booking_time ?? ""),
+    id,
+    cancellationToken,
+  };
 }
 
 export async function getBookedSlots(date: string): Promise<string[]> {
-  return rpc<string[]>("get_booked_slots", { p_date: date });
+  const { data, error } = await supabase.rpc("get_booked_slots", {
+    p_date: date,
+  });
+
+  if (error) throw new Error(error.message);
+  return Array.isArray(data) ? data.map(String) : [];
 }
 
 export async function createBooking(input: BookingInput): Promise<Booking> {
-  return rpc<Booking>("create_booking", {
+  const { data, error } = await supabase.rpc("create_booking", {
     p_name: input.name,
     p_phone: input.phone,
     p_car: input.car,
@@ -65,8 +65,15 @@ export async function createBooking(input: BookingInput): Promise<Booking> {
     p_date: input.bookingDate,
     p_time: input.bookingTime,
   });
+
+  if (error) throw new Error(error.message);
+  return parseBooking(data);
 }
 
 export async function cancelBooking(token: string): Promise<void> {
-  await rpc("cancel_booking", { p_token: token });
+  const { error } = await supabase.rpc("cancel_booking", {
+    p_token: token,
+  });
+
+  if (error) throw new Error(error.message);
 }
