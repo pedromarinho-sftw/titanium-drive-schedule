@@ -21,12 +21,12 @@ function parseBooking(value: unknown): Booking {
   }
 
   const data = value as Record<string, unknown>;
-  const id = typeof data.id === "string" ? data.id : "";
+  const id = typeof data["id"] === "string" ? data["id"] : "";
   const cancellationToken =
-    typeof data.cancellationToken === "string"
-      ? data.cancellationToken
-      : typeof data.cancellation_token === "string"
-        ? data.cancellation_token
+    typeof data["cancellationToken"] === "string"
+      ? data["cancellationToken"]
+      : typeof data["cancellation_token"] === "string"
+        ? data["cancellation_token"]
         : "";
 
   if (!id || !cancellationToken) {
@@ -34,13 +34,13 @@ function parseBooking(value: unknown): Booking {
   }
 
   return {
-    name: String(data.name ?? ""),
-    phone: String(data.phone ?? ""),
-    car: String(data.car ?? ""),
-    notes: String(data.notes ?? ""),
-    service: String(data.service ?? ""),
-    bookingDate: String(data.bookingDate ?? data.booking_date ?? ""),
-    bookingTime: String(data.bookingTime ?? data.booking_time ?? ""),
+    name: String(data["name"] ?? ""),
+    phone: String(data["phone"] ?? ""),
+    car: String(data["car"] ?? ""),
+    notes: String(data["notes"] ?? ""),
+    service: String(data["service"] ?? ""),
+    bookingDate: String(data["bookingDate"] ?? data["booking_date"] ?? ""),
+    bookingTime: String(data["bookingTime"] ?? data["booking_time"] ?? ""),
     id,
     cancellationToken,
   };
